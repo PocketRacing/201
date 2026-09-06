@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>BLACKJACK AI ADVISOR</title>
+
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#07110d;color:#fff;font-family:Arial,Helvetica,sans-serif}
+body{min-height:100vh}
+
+button,input,select{font:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+.app{
+ max-width:1250px;
+ margin:auto;
+ padding:12px;
+}
+
+.header{
+ background:linear-gradient(135deg,#10251a,#0a1711);
+ border:1px solid #254b36;
+ border-radius:18px;
+ padding:16px;
+ box-shadow:0 10px 35px #0008;
+}
+
+.logo{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:10px;
+}
+
+.logo h1{
+ margin:0;
+ font-size:25px;
+ letter-spacing:1px;
+}
+
+.logo small{
+ color:#7ed6a0;
+ display:block;
+ margin-top:4px;
+}
+
+.balance{
+ background:#07100b;
+ border:1px solid #31583f;
+ border-radius:13px;
+ padding:10px 15px;
+ text-align:right;
+ min-width:150px;
+}
+
+.balance span{
+ display:block;
+ color:#8ba994;
+ font-size:11px;
+}
+
+.balance b{
+ font-size:21px;
+ color:#b9ffcf;
+}
+
+.nav{
+ display:flex;
+ gap:7px;
+ margin-top:14px;
+ overflow:auto;
+}
+
+.nav button{
+ border:1px solid #294b36;
+ background:#0c1b13;
+ color:#b6cabb;
+ padding:10px 14px;
+ border-radius:10px;
+ white-space:nowrap;
+}
+
+.nav button.active,
+.nav button:hover{
+ background:#1b5a34;
+ color:white;
+}
+
+.layout{
+ display:grid;
+ grid-template-columns:minmax(0,1.6fr) minmax(300px,.8fr);
+ gap:12px;
+ margin-top:12px;
+}
+
+.panel{
+ background:#0b1711;
+ border:1px solid #244633;
+ border-radius:18px;
+ padding:14px;
+ box-shadow:0 10px 35px #0005;
+}
+
+.panel h2{
+ margin:0 0 12px;
+ font-size:17px;
+}
+
+.table{
+ min-height:520px;
+ border-radius:17px;
+ padding:18px;
+ background:
+ radial-gradient(circle at 50% 40%,#15522f 0,#0b3b23 32%,#062719 65%,#041a11 100%);
+ border:2px solid #1f633e;
+ position:relative;
+ overflow:hidden;
+}
+
+.table:before{
+ content:"BLACKJACK";
+ position:absolute;
+ left:50%;
+ top:48%;
+ transform:translate(-50%,-50%);
+ font-size:65px;
+ font-weight:bold;
+ color:#fff1;
+ pointer-events:none;
+}
+
+.seat{
+ position:relative;
+ z-index:1;
+}
+
+.seat-title{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-bottom:8px;
+}
+
+.seat-title span{
+ color:#b4d0bc;
+ font-size:13px;
+}
+
+.points{
+ font-size:28px;
+ font-weight:bold;
+}
+
+.cards{
+ min-height:120px;
+ display:flex;
+ flex-wrap:wrap;
+ gap:10px;
+ margin-bottom:24px;
+}
+
+.card{
+ width:72px;
+ height:102px;
+ border-radius:9px;
+ background:#fff;
+ color:#151515;
+ box-shadow:0 5px 13px #0008;
+ display:flex;
+ flex-direction:column;
+ justify-content:space-between;
+ padding:7px;
+ font-weight:bold;
+ position:relative;
+}
+
+.card.red{color:#c92828}
+
+.card .rank{
+ font-size:23px;
+}
+
+.card .suit{
+ font-size:22px;
+ align-self:center;
+}
+
+.card .bottom{
+ transform:rotate(180deg);
+ font-size:16px;
+ align-self:flex-end;
+}
+
+.card.hidden{
+ background:repeating-linear-gradient(
+  45deg,#142b50 0,#142b50 8px,#1d426f 8px,#1d426f 16px
+ );
+ color:white;
+ border:3px solid #eee;
+}
+
+.card.hidden:after{
+ content:"?";
+ position:absolute;
+ left:50%;
+ top:50%;
+ transform:translate(-50%,-50%);
+ font-size:35px;
+}
+
+.controls{
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:8px;
+ position:relative;
+ z-index:2;
+}
+
+.btn{
+ border:0;
+ border-radius:12px;
+ padding:13px 8px;
+ color:white;
+ font-weight:bold;
+ background:#183023;
+ border:1px solid #376448;
+ transition:.15s;
+}
+
+.btn:active{transform:scale(.97)}
+
+.btn.green{background:#176c3a}
+.btn.blue{background:#174d79}
+.btn.gold{background:#7b5a13}
+.btn.red{background:#752929}
+.btn.dark{background:#101a15}
+
+.btn:disabled{
+ opacity:.35;
+ cursor:not-allowed;
+}
+
+.side{
+ display:flex;
+ flex-direction:column;
+ gap:12px;
+}
+
+.ai-box{
+ min-height:240px;
+ max-height:390px;
+ overflow:auto;
+ background:#07100b;
+ border:1px solid #294e37;
+ border-radius:13px;
+ padding:10px;
+}
+
+.msg{
+ margin-bottom:9px;
+ padding:10px;
+ border-radius:11px;
+ line-height:1.4;
+ font-size:13px;
+}
+
+.msg.ai{
+ background:#10291b;
+ border-left:3px solid #4ade80;
+}
+
+.msg.user{
+ background:#17231b;
+ border-left:3px solid #8fa995;
+}
+
+.msg strong{
+ color:#b9ffcc;
+}
+
+.chat-row{
+ display:flex;
+ gap:7px;
+ margin-top:8px;
+}
+
+input{
+ width:100%;
+ background:#07100b;
+ color:white;
+ border:1px solid #31533e;
+ border-radius:10px;
+ padding:12px;
+ outline:none;
+}
+
+input:focus{border-color:#5fbb7d}
+
+.chat-row button{
+ width:52px;
+ border:0;
+ border-radius:10px;
+ background:#237542;
+ color:white;
+}
+
+.bet-box{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:8px;
+}
+
+.bet-option{
+ padding:11px;
+ border:1px solid #31543d;
+ background:#0b1a11;
+ color:white;
+ border-radius:10px;
+}
+
+.bet-option.selected{
+ background:#1d6339;
+ border-color:#65cf89;
+}
+
+.stats{
+ display:grid;
+ grid-template-columns:repeat(2,1fr);
+ gap:8px;
+}
+
+.stat{
+ background:#07100b;
+ border:1px solid #294733;
+ padding:11px;
+ border-radius:11px;
+}
+
+.stat span{
+ color:#81998a;
+ font-size:11px;
+ display:block;
+}
+
+.stat b{
+ display:block;
+ margin-top:4px;
+ font-size:18px;
+}
+
+.progress{
+ height:10px;
+ background:#07100b;
+ border-radius:20px;
+ overflow:hidden;
+ margin-top:8px;
+}
+
+.progress div{
+ height:100%;
+ width:0%;
+ background:#4ade80;
+ transition:.3s;
+}
+
+.target-line{
+ display:flex;
+ justify-content:space-between;
+ color:#9ab3a0;
+ font-size:12px;
+ margin-top:6px;
+}
+
+.notice{
+ background:#101d15;
+ border:1px solid #31543d;
+ border-radius:12px;
+ padding:10px;
+ font-size:12px;
+ color:#b3c7b8;
+ line-height:1.45;
+}
+
+.history{
+ max-height:250px;
+ overflow:auto;
+}
+
+.history-item{
+ display:flex;
+ justify-content:space-between;
+ padding:9px 3px;
+ border-bottom:1px solid #1c3023;
+ font-size:12px;
+}
+
+.win{color:#72e79b}
+.loss{color:#ff7777}
+.push{color:#f0ca68}
+
+.section{
+ display:none;
+}
+
+.section.active{
+ display:block;
+}
+
+.big-action{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:8px;
+ margin-top:10px;
+}
+
+.action-card{
+ background:#0a1810;
+ border:1px solid #2c4c36;
+ padding:12px;
+ border-radius:12px;
+}
+
+.action-card h3{
+ margin:0 0 7px;
+ font-size:14px;
+}
+
+.action-card p{
+ margin:0;
+ color:#a9bcae;
+ font-size:12px;
+ line-height:1.4;
+}
+
+.tag{
+ display:inline-block;
+ padding:4px 8px;
+ border-radius:20px;
+ background:#183622;
+ color:#9beeb5;
+ font-size:11px;
+ margin-top:7px;
+}
+
+.advice{
+ margin-top:10px;
+ border-radius:14px;
+ padding:14px;
+ background:#10261a;
+ border:1px solid #3d7650;
+ text-align:center;
+}
+
+.advice .decision{
+ font-size:25px;
+ font-weight:bold;
+ color:#8df0aa;
+}
+
+.advice .reason{
+ color:#b0c6b7;
+ font-size:12px;
+ margin-top:5px;
+}
+
+.manual-result{
+ margin-top:10px;
+ padding:13px;
+ background:#0a1810;
+ border-radius:12px;
+ border:1px solid #294733;
+}
+
+.table-controls{
+ display:flex;
+ gap:8px;
+ flex-wrap:wrap;
+ margin-bottom:12px;
+}
+
+.table-controls button{
+ flex:1;
+ min-width:120px;
+}
+
+@media(max-width:850px){
+ .layout{grid-template-columns:1fr}
+ .table{min-height:450px}
+}
+
+@media(max-width:520px){
+ .app{padding:7px}
+ .header{padding:12px}
+ .logo h1{font-size:20px}
+ .balance{min-width:120px}
+ .balance b{font-size:17px}
+ .table{padding:12px;min-height:430px}
+ .card{width:61px;height:89px}
+ .controls{grid-template-columns:repeat(2,1fr)}
+ .big-action{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header class="header">
+ <div class="logo">
+  <div>
+   <h1>🃏 BLACKJACK AI ADVISOR</h1>
+   <small>Универсальный советчик по игре «21»</small>
+  </div>
+
+  <div class="balance">
+   <span>БАНК</span>
+   <b id="balance">17 220</b>
+  </div>
+ </div>
+
+ <div class="nav">
+  <button class="active" onclick="showSection('game',this)">🎰 Игра</button>
+  <button onclick="showSection('manual',this)">🤖 Советчик</button>
+  <button onclick="showSection('strategy',this)">🧠 Стратегия</button>
+  <button onclick="showSection('stats',this)">📊 Статистика</button>
+ </div>
+</header>
+
+<!-- GAME -->
+<section id="game" class="section active">
+
+ <div class="layout">
+
+  <main class="panel">
+
+   <div class="table-controls">
+    <button class="btn gold" onclick="newRound()">🎲 Новая раздача</button>
+    <button class="btn dark" onclick="resetBank()">↻ Сбросить банк</button>
+   </div>
+
+   <div class="panel" style="margin-bottom:10px">
+    <h2>💰 Ставка</h2>
+
+    <div class="bet-box">
+     <button class="bet-option" onclick="setBet(5)">5</button>
+     <button class="bet-option" onclick="setBet(10)">10</button>
+     <button class="bet-option" onclick="setBet(25)">25</button>
+     <button class="bet-option" onclick="setBet(50)">50</button>
+     <button class="bet-option" onclick="setBet(100)">100</button>
+     <button class="bet-option" onclick="setBet(250)">250</button>
+     <button class="bet-option selected" onclick="setBet(500)">500</button>
+     <button class="bet-option" onclick="customBet()">Своя</button>
+    </div>
+
+    <div style="margin-top:9px;color:#91a695;font-size:12px">
+      Текущая ставка:
+      <b id="betText" style="color:#fff">500</b>
+    </div>
+   </div>
+
+   <div class="table">
+
+    <div class="seat">
+
+     <div class="seat-title">
+      <span>🎩 ДИЛЕР</span>
+      <div class="points" id="dealerPoints">?</div>
+     </div>
+
+     <div class="cards" id="dealerCards"></div>
+
+    </div>
+
+    <div class="seat">
+
+     <div class="seat-title">
+      <span>👤 ТЫ</span>
+      <div class="points" id="playerPoints">0</div>
+     </div>
+
+     <div class="cards" id="playerCards"></div>
+
+    </div>
+
+    <div class="controls">
+     <button id="hitBtn" class="btn green" onclick="hit()">🃏 ВЗЯТЬ</button>
+     <button id="standBtn" class="btn blue" onclick="stand()">✋ СТОП</button>
+     <button id="doubleBtn" class="btn gold" onclick="doubleDown()">⚡ УДВОИТЬ</button>
+     <button class="btn dark" onclick="showAdvice()">🤖 СОВЕТ</button>
+    </div>
+
+    <div id="gameAdvice" class="advice" style="display:none">
+     <div class="decision" id="gameDecision">—</div>
+     <div class="reason" id="gameReason"></div>
+    </div>
+
+   </div>
+
+  </main>
+
+  <aside class="side">
+
+   <div class="panel">
+    <h2>🤖 ИИ-советчик</h2>
+
+    <div class="ai-box" id="chat">
+     <div class="msg ai">
+      <strong>ИИ:</strong><br>
+      Готов. Можешь играть здесь или просто сообщить мне ситуацию из другой игры.
+      Например: <b>«у меня 16, у дилера 10»</b>.
+     </div>
+    </div>
+
+    <div class="chat-row">
+     <input id="chatInput" placeholder="Например: у меня 16, дилер 10">
+     <button onclick="sendChat()">➤</button>
+    </div>
+   </div>
+
+   <div class="panel">
+    <h2>🎯 Цель банка</h2>
+
+    <input id="targetInput" type="number" value="1000000" onchange="setTarget()">
+
+    <div class="progress">
+     <div id="progress"></div>
+    </div>
+
+    <div class="target-line">
+     <span id="progressText">1.7%</span>
+     <span>1 000 000</span>
+    </div>
+   </div>
+
+   <div class="panel">
+    <h2>📊 Быстрая статистика</h2>
+
+    <div class="stats">
+     <div class="stat">
+      <span>ПОБЕДЫ</span>
+      <b id="wins">0</b>
+     </div>
+
+     <div class="stat">
+      <span>ПОРАЖЕНИЯ</span>
+      <b id="losses">0</b>
+     </div>
+
+     <div class="stat">
+      <span>НИЧЬИ</span>
+      <b id="pushes">0</b>
+     </div>
+
+     <div class="stat">
+      <span>РАЗДАЧ</span>
+      <b id="rounds">0</b>
+     </div>
+    </div>
+   </div>
+
+  </aside>
+
+ </div>
+
+</section>
+
+<!-- MANUAL -->
+<section id="manual" class="section">
+
+ <div class="layout">
+
+  <main class="panel">
+
+   <h2>🤖 Ручной советчик</h2>
+
+   <div class="notice">
+    Этот режим нужен, если ты играешь в Blackjack в другой игре.
+    Просто введи свои очки и открытую карту дилера.
+   </div>
+
+   <div class="big-action">
+
+    <div class="action-card">
+     <h3>👤 Твои очки</h3>
+     <input id="manualPlayer" type="number" min="2" max="30" placeholder="Например 16">
+     <span class="tag">Можно написать сумму очков</span>
+    </div>
+
+    <div class="action-card">
+     <h3>🎩 Карта / очки дилера</h3>
+     <input id="manualDealer" type="number" min="2" max="11" placeholder="Например 10">
+     <span class="tag">Открытая карта дилера</span>
+    </div>
+
+   </div>
+
+   <div class="big-action">
+
+    <div class="action-card">
+     <h3>💰 Ставка</h3>
+     <input id="manualBet" type="number" value="500">
+    </div>
+
+    <div class="action-card">
+     <h3>🃏 Ситуация</h3>
+     <select id="manualSoft" style="width:100%;padding:12px;border-radius:10px;background:#07100b;color:white;border:1px solid #31533e">
+      <option value="auto">Определить автоматически</option>
+      <option value="hard">Жёсткая рука</option>
+      <option value="soft">Мягкая рука (есть туз)</option>
+      <option value="pair">Пара</option>
+     </select>
+    </div>
+
+   </div>
+
+   <button class="btn green" style="width:100%;margin-top:10px" onclick="manualAdvice()">
+    🤖 ПОЛУЧИТЬ СОВЕТ
+   </button>
+
+   <div id="manualResult" class="manual-result">
+    Введи ситуацию и нажми «Получить совет».
+   </div>
+
+  </main>
+
+  <aside class="panel">
+   <h2>💬 Можно писать как угодно</h2>
+
+   <div class="notice">
+    Советчик понимает обычные фразы:
+    <br><br>
+    • «У меня 16, дилер 10»
+    <br>
+    • «Я 11, у него 6»
+    <br>
+    • «У меня 15 против 9»
+    <br>
+    • «У меня 12, дилер 4, что делать?»
+    <br>
+    • «У меня 10+6, дилер показывает 10»
+   </div>
+
+   <div style="margin-top:12px">
+    <input id="quickInput" placeholder="У меня 16, дилер 10">
+   </div>
+
+   <button class="btn blue" style="width:100%;margin-top:8px" onclick="quickAdvice()">
+    🧠 ПРОАНАЛИЗИРОВАТЬ
+   </button>
+
+   <div id="quickResult" class="advice" style="display:none"></div>
+  </aside>
+
+ </div>
+
+</section>
+
+<!-- STRATEGY -->
+<section id="strategy" class="section">
+
+ <div class="panel">
+
+  <h2>🧠 Базовая стратегия Blackjack</h2>
+
+  <div class="notice">
+   Советчик использует базовую стратегию для классического Blackjack.
+   В конкретной игре правила могут отличаться, поэтому результат не является гарантией выигрыша.
+  </div>
+
+  <div class="big-action">
+
+   <div class="action-card">
+    <h3>👤 Жёсткая рука</h3>
+    <p>
+     8 и меньше — обычно БРАТЬ.<br>
+     9 — удвоить против 3–6.<br>
+     10 — удвоить против 2–9.<br>
+     11 — обычно удвоить.<br>
+     12 — учитывать карту дилера.<br>
+     13–16 — часто стоп против слабого дилера.<br>
+     17+ — обычно СТОП.
+    </p>
+   </div>
+
+   <div class="action-card">
+    <h3>🅰️ Мягкая рука</h3>
+    <p>
+     Туз может считаться 11 или 1.
+     Поэтому рука вроде A+6 = 17 может быть более безопасной для добора.
+     В некоторых ситуациях выгодно удваивать.
+    </p>
+   </div>
+
+   <div class="action-card">
+    <h3>👯 Пары</h3>
+    <p>
+     Тузы и восьмёрки обычно имеют особые решения.
+     Пары 10 обычно не стоит разделять.
+     Для остальных пар решение зависит от открытой карты дилера.
+    </p>
+   </div>
+
+   <div class="action-card">
+    <h3>🎩 Дилер</h3>
+    <p>
+     Слабые открытые карты дилера — 4, 5 и 6.
+     При сильных картах дилера риск добора может быть необходим.
+     Советчик учитывает эту карту.
+    </p>
+   </div>
+
+  </div>
+
+ </div>
+
+</section>
+
+<!-- STATS -->
+<section id="stats" class="section">
+
+ <div class="layout">
+
+  <main class="panel">
+   <h2>📊 Статистика</h2>
+
+   <div class="stats">
+    <div class="stat"><span>ПОБЕДЫ</span><b id="swins">0</b></div>
+    <div class="stat"><span>ПОРАЖЕНИЯ</span><b id="slosses">0</b></div>
+    <div class="stat"><span>НИЧЬИ</span><b id="spushes">0</b></div>
+    <div class="stat"><span>РАЗДАЧИ</span><b id="srounds">0</b></div>
+   </div>
+
+   <div class="notice" style="margin-top:10px">
+    Всего поставлено: <b id="totalBet">0</b><br>
+    Чистый результат: <b id="profit">0</b><br>
+    Лучшая сумма банка: <b id="bestBank">17 220</b>
+   </div>
+  </main>
+
+  <aside class="panel">
+   <h2>📜 История</h2>
+   <div class="history" id="history"></div>
+  </aside>
+
+ </div>
+
+</section>
+
+</div>
+
+<script>
+/* =========================================================
+   BLACKJACK AI ADVISOR
+   Полностью автономный JavaScript
+   ========================================================= */
+
+const START_BANK=17220;
+
+let state={
+ balance:START_BANK,
+ bet:500,
+ target:1000000,
+
+ deck:[],
+ player:[],
+ dealer:[],
+ dealerHidden:true,
+
+ inRound:false,
+ doubled:false,
+
+ wins:0,
+ losses:0,
+ pushes:0,
+ rounds:0,
+
+ totalBet:0,
+ profit:0,
+ bestBank:START_BANK,
+
+ history:[]
+};
+
+/* -------------------------
+   Сохранение
+------------------------- */
+
+function save(){
+ localStorage.setItem("bj_ai_state",JSON.stringify(state));
+}
+
+function load(){
+ try{
+  const x=JSON.parse(localStorage.getItem("bj_ai_state"));
+  if(x){
+   state={...state,...x};
+  }
+ }catch(e){}
+}
+
+load();
+
+/* -------------------------
+   Форматирование
+------------------------- */
+
+function money(n){
+ return Number(n||0).toLocaleString("ru-RU");
+}
+
+/* -------------------------
+   Колода
+------------------------- */
+
+const suits=[
+ {s:"♠",red:false},
+ {s:"♥",red:true},
+ {s:"♦",red:true},
+ {s:"♣",red:false}
+];
+
+const ranks=[
+ ["A",11],
+ ["2",2],
+ ["3",3],
+ ["4",4],
+ ["5",5],
+ ["6",6],
+ ["7",7],
+ ["8",8],
+ ["9",9],
+ ["10",10],
+ ["J",10],
+ ["Q",10],
+ ["K",10]
+];
+
+function createDeck(){
+ let d=[];
+
+ for(let shoe=0;shoe<4;shoe++){
+  suits.forEach(s=>{
+   ranks.forEach(r=>{
+    d.push({
+     rank:r[0],
+     value:r[1],
+     suit:s.s,
+     red:s.red
+    });
+   });
+  });
+ }
+
+ return d;
+}
+
+function shuffle(d){
+ for(let i=d.length-1;i>0;i--){
+  let j=Math.floor(Math.random()*(i+1));
+  [d[i],d[j]]=[d[j],d[i]];
+ }
+ return d;
+}
+
+function draw(){
+ if(state.deck.length<20){
+  state.deck=shuffle(createDeck());
+ }
+
+ return state.deck.pop();
+}
+
+/* -------------------------
+   Очки
+------------------------- */
+
+function score(cards){
+
+ let total=0;
+ let aces=0;
+
+ cards.forEach(c=>{
+  total+=c.value;
+  if(c.rank==="A")aces++;
+ });
+
+ while(total>21 && aces>0){
+  total-=10;
+  aces--;
+ }
+
+ return total;
+}
+
+function isSoft(cards){
+ let total=0;
+ let aces=0;
+
+ cards.forEach(c=>{
+  total+=c.value;
+  if(c.rank==="A")aces++;
+ });
+
+ while(total>21 && aces>0){
+  total-=10;
+  aces--;
+ }
+
+ return aces>0;
+}
+
+/* -------------------------
+   Рендер карты
+------------------------- */
+
+function cardHTML(c,hidden=false){
+
+ if(hidden){
+  return `<div class="card hidden"></div>`;
+ }
+
+ return `
+ <div class="card ${c.red?"red":""}">
+   <div class="rank">${c.rank}</div>
+   <div class="suit">${c.suit}</div>
+   <div class="bottom">${c.rank}${c.suit}</div>
+ </div>
+ `;
+}
+
+function render(){
+
+ document.getElementById("balance").textContent=money(state.balance);
+ document.getElementById("betText").textContent=money(state.bet);
+
+ document.getElementById("playerCards").innerHTML=
+  state.player.map(c=>cardHTML(c)).join("");
+
+ document.getElementById("dealerCards").innerHTML=
+  state.dealer.map((c,i)=>cardHTML(c,i===1 && state.dealerHidden)).join("");
+
+ document.getElementById("playerPoints").textContent=
+  state.player.length?score(state.player):"0";
+
+ document.getElementById("dealerPoints").textContent=
+  state.dealer.length?
+  (state.dealerHidden?score([state.dealer[0]])+" + ?":score(state.dealer)):
+  "?";
+
+ document.getElementById("wins").textContent=state.wins;
+ document.getElementById("losses").textContent=state.losses;
+ document.getElementById("pushes").textContent=state.pushes;
+ document.getElementById("rounds").textContent=state.rounds;
+
+ document.getElementById("swins").textContent=state.wins;
+ document.getElementById("slosses").textContent=state.losses;
+ document.getElementById("spushes").textContent=state.pushes;
+ document.getElementById("srounds").textContent=state.rounds;
+
+ document.getElementById("totalBet").textContent=money(state.totalBet);
+ document.getElementById("profit").textContent=money(state.profit);
+ document.getElementById("bestBank").textContent=money(state.bestBank);
+
+ let p=Math.min(100,(state.balance/state.target)*100);
+
+ document.getElementById("progress").style.width=p+"%";
+ document.getElementById("progressText").textContent=p.toFixed(2)+"%";
+
+ document.getElementById("targetInput").value=state.target;
+
+ document.getElementById("history").innerHTML=
+  state.history.slice().reverse().map(x=>`
+   <div class="history-item">
+    <span>${x.text}</span>
+    <b class="${x.type}">${x.result}</b>
+   </div>
+  `).join("");
+
+ let active=state.inRound;
+
+ document.getElementById("hitBtn").disabled=!active;
+ document.getElementById("standBtn").disabled=!active;
+ document.getElementById("doubleBtn").disabled=
+  !active || state.doubled || state.balance<state.bet;
+
+ save();
+}
+
+/* -------------------------
+   Новая раздача
+------------------------- */
+
+function newRound(){
+
+ if(state.inRound)return;
+
+ if(state.bet<=0){
+  alert("Укажи ставку.");
+  return;
+ }
+
+ if(state.balance<state.bet){
+  alert("Недостаточно фишек.");
+  return;
+ }
+
+ state.balance-=state.bet;
+ state.totalBet+=state.bet;
+
+ state.deck=state.deck.length?state.deck:shuffle(createDeck());
+
+ state.player=[draw(),draw()];
+ state.dealer=[draw(),draw()];
+
+ state.dealerHidden=true;
+ state.inRound=true;
+ state.doubled=false;
+
+ hideAdvice();
+
+ render();
+
+ addAI(
+  `Новая раздача.<br>
+   💰 Ставка: <strong>${money(state.bet)}</strong><br>
+   👤 У тебя: <strong>${score(state.player)}</strong><br>
+   🎩 Дилер показывает: <strong>${state.dealer[0].value}</strong>`
+ );
+
+ checkInitial();
+}
+
+function checkInitial(){
+
+ let ps=score(state.player);
+
+ if(ps===21){
+  state.dealerHidden=false;
+
+  let ds=score(state.dealer);
+
+  if(ds===21){
+   finish("push");
+  }else{
+   let win=Math.floor(state.bet*2.5);
+   state.balance+=win;
+   state.wins++;
+   state.rounds++;
+   state.profit+=win-state.bet;
+   state.bestBank=Math.max(state.bestBank,state.balance);
+
+   addHistory("Blackjack","+"+money(win), "win");
+   addAI(`<strong>BLACKJACK!</strong> 🎉<br>Твоя выплата: ${money(win)}`);
+   state.inRound=false;
+   render();
+  }
+
+  return;
+ }
+
+ showAdvice();
+}
+
+/* -------------------------
+   Взять карту
+------------------------- */
+
+function hit(){
+
+ if(!state.inRound)return;
+
+ state.player.push(draw());
+
+ let p=score(state.player);
+
+ render();
+
+ if(p>21){
+  state.dealerHidden=false;
+  finish("loss");
+ }else if(p===21){
+  stand();
+ }else{
+  showAdvice();
+ }
+}
+
+/* -------------------------
+   Стоп
+------------------------- */
+
+function stand(){
+
+ if(!state.inRound)return;
+
+ state.dealerHidden=false;
+
+ while(score(state.dealer)<17){
+  state.dealer.push(draw());
+ }
+
+ let p=score(state.player);
+ let d=score(state.dealer);
+
+ render();
+
+ if(d>21)finish("win");
+ else if(p>d)finish("win");
+ else if(p<d)finish("loss");
+ else finish("push");
+}
+
+/* -------------------------
+   Удвоение
+------------------------- */
+
+function doubleDown(){
+
+ if(!state.inRound)return;
+
+ if(state.doubled)return;
+
+ if(state.balance<state.bet){
+  addAI("❌ Недостаточно фишек для удвоения.");
+  return;
+ }
+
+ state.balance-=state.bet;
+ state.totalBet+=state.bet;
+ state.bet*=2;
+ state.doubled=true;
+
+ state.player.push(draw());
+
+ let p=score(state.player);
+
+ render();
+
+ if(p>21){
+  state.dealerHidden=false;
+  finish("loss");
+ }else{
+  stand();
+ }
+}
+
+/* -------------------------
+   Завершение
+------------------------- */
+
+function finish(result){
+
+ state.dealerHidden=false;
+
+ let payout=0;
+
+ if(result==="win"){
+  payout=state.bet*2;
+  state.balance+=payout;
+  state.wins++;
+  state.profit+=state.bet;
+  addHistory("Победа","+"+money(state.bet),"win");
+ }
+
+ if(result==="loss"){
+  state.losses++;
+  state.profit-=state.bet;
+  addHistory("Поражение","-"+money(state.bet),"loss");
+ }
+
+ if(result==="push"){
+  payout=state.bet;
+  state.balance+=payout;
+  state.pushes++;
+  addHistory("Ничья","0","push");
+ }
+
+ state.rounds++;
+ state.bestBank=Math.max(state.bestBank,state.balance);
+ state.inRound=false;
+
+ let ps=score(state.player);
+ let ds=score(state.dealer);
+
+ let resultText=
+  result==="win"?"ПОБЕДА 🟢":
+  result==="loss"?"ПРОИГРЫШ 🔴":
+  "НИЧЬЯ 🟡";
+
+ addAI(`
+  <strong>${resultText}</strong><br>
+  👤 Ты: ${ps}<br>
+  🎩 Дилер: ${ds}<br>
+  💰 Банк: ${money(state.balance)}
+ `);
+
+ render();
+}
+
+/* -------------------------
+   История
+------------------------- */
+
+function addHistory(text,result,type){
+
+ state.history.push({
+  text:text,
+  result:result,
+  type:type
+ });
+
+ if(state.history.length>100){
+  state.history.shift();
+ }
+}
+
+/* -------------------------
+   Советчик
+------------------------- */
+
+function strategy(player,dealer,soft=false){
+
+ /*
+  Приближённая базовая стратегия.
+  Для максимальной точности конкретных правил игры
+  можно расширить таблицу.
+ */
+
+ if(player>=21){
+  return {
+   action:"СТОП ✋",
+   reason:"У тебя уже 21 или больше."
+  };
+ }
+
+ if(soft){
+
+  if(player<=17){
+   if(player>=13 && player<=15 && dealer>=5 && dealer<=6)
+    return {action:"УДВОИТЬ ⚡",reason:"Мягкая рука и слабая карта дилера."};
+
+   return {action:"БРАТЬ 🃏",reason:"Мягкая рука позволяет безопаснее добрать."};
+  }
+
+  if(player===18){
+
+   if(dealer>=3 && dealer<=6)
+    return {action:"УДВОИТЬ ⚡",reason:"A+7 против слабой карты дилера."};
+
+   if(dealer===2 || dealer===7 || dealer===8)
+    return {action:"СТОП ✋",reason:"18 — хорошая сумма в этой ситуации."};
+
+   return {action:"БРАТЬ 🃏",reason:"Против сильной карты дилера 18 может требовать улучшения."};
+  }
+
+  return {action:"СТОП ✋",reason:"Высокая мягкая сумма."};
+ }
+
+ if(player<=8){
+  return {action:"БРАТЬ 🃏",reason:"Слишком мало очков, чтобы останавливаться."};
+ }
+
+ if(player===9){
+  if(dealer>=3 && dealer<=6)
+   return {action:"УДВОИТЬ ⚡",reason:"9 против слабой карты дилера — хорошая возможность удвоить."};
+
+  return {action:"БРАТЬ 🃏",reason:"Недостаточно очков для остановки."};
+ }
+
+ if(player===10){
+  if(dealer<=9)
+   return {action:"УДВОИТЬ ⚡",reason:"10 против 2–9 — сильная ситуация для удвоения."};
+
+  return {action:"БРАТЬ 🃏",reason:"Против 10 дилера лучше добрать."};
+ }
+
+ if(player===11){
+  return {action:"УДВОИТЬ ⚡",reason:"11 — одна из лучших ситуаций для удвоения."};
+ }
+
+ if(player===12){
+  if(dealer>=4 && dealer<=6)
+   return {action:"СТОП ✋",reason:"У дилера слабая карта — можно позволить ему ошибиться."};
+
+  return {action:"БРАТЬ 🃏",reason:"12 против сильной карты дилера недостаточно."};
+ }
+
+ if(player>=13 && player<=16){
+
+  if(dealer>=2 && dealer<=6)
+   return {action:"СТОП ✋",reason:"У дилера слабая открытая карта."};
+
+  return {action:"БРАТЬ 🃏",reason:"Против сильной карты дилера 13–16 часто нужно пытаться улучшить руку."};
+ }
+
+ if(player>=17){
+  return {action:"СТОП ✋",reason:"17 или больше — обычно уже стоит остановиться."};
+ }
+
+ return {action:"БРАТЬ 🃏",reason:"Недостаточно данных для другого решения."};
+}
+
+function showAdvice(){
+
+ if(!state.inRound)return;
+
+ let p=score(state.player);
+ let d=state.dealer[0].value;
+
+ let soft=isSoft(state.player);
+
+ let r=strategy(p,d,soft);
+
+ document.getElementById("gameAdvice").style.display="block";
+ document.getElementById("gameDecision").textContent=r.action;
+ document.getElementById("gameReason").textContent=
+  r.reason+
+  ` Твои очки: ${p}. Дилер показывает: ${d}.`;
+
+ addAI(`
+  👤 У тебя: <strong>${p}</strong><br>
+  🎩 Дилер показывает: <strong>${d}</strong><br>
+  💡 Совет: <strong>${r.action}</strong><br>
+  ${r.reason}
+ `);
+}
+
+function hideAdvice(){
+ document.getElementById("gameAdvice").style.display="none";
+}
+
+/* -------------------------
+   Ручной анализ
+------------------------- */
+
+function manualAdvice(){
+
+ let p=parseInt(document.getElementById("manualPlayer").value);
+ let d=parseInt(document.getElementById("manualDealer").value);
+ let mode=document.getElementById("manualSoft").value;
+
+ if(!p || !d){
+  document.getElementById("manualResult").innerHTML=
+   "⚠️ Укажи очки игрока и дилера.";
+  return;
+ }
+
+ let soft=mode==="soft";
+
+ let r=strategy(p,d,soft);
+
+ document.getElementById("manualResult").innerHTML=`
+  <div style="text-align:center">
+   <div style="font-size:25px;font-weight:bold;color:#8df0aa">
+    ${r.action}
+   </div>
+
+   <div style="margin-top:8px">
+    👤 У тебя: <b>${p}</b><br>
+    🎩 Дилер: <b>${d}</b>
+   </div>
+
+   <div style="margin-top:8px;color:#aebfb2">
+    ${r.reason}
+   </div>
+  </div>
+ `;
+
+ addAI(`
+  Ручной анализ:<br>
+  👤 Игрок: ${p}<br>
+  🎩 Дилер: ${d}<br>
+  💡 <strong>${r.action}</strong><br>
+  ${r.reason}
+ `);
+}
+
+/* -------------------------
+   Распознавание чата
+------------------------- */
+
+function parseSituation(text){
+
+ let clean=text
+  .toLowerCase()
+  .replace(/,/g," ")
+  .replace(/;/g," ")
+  .replace(/\+/g," ");
+
+ let nums=(clean.match(/\d+/g)||[]).map(Number);
+
+ let player=null;
+ let dealer=null;
+
+ /*
+  Пытаемся определить числа рядом с ключевыми словами.
+ */
+
+ let pm=clean.match(
+  /(?:у меня|я|мои очки|моя сумма|игрок)\D{0,15}(\d+)/
+ );
+
+ let dm=clean.match(
+  /(?:дилер|у него|у дилера|карта дилера|он показывает)\D{0,15}(\d+)/
+ );
+
+ if(pm)player=parseInt(pm[1]);
+ if(dm)dealer=parseInt(dm[1]);
+
+ if(player===null && dealer===null && nums.length>=2){
+  player=nums[0];
+  dealer=nums[1];
+ }
+
+ return {player,dealer};
+}
+
+function quickAdvice(){
+
+ let text=document.getElementById("quickInput").value;
+ let s=parseSituation(text);
+
+ if(!s.player || !s.dealer){
+  document.getElementById("quickResult").style.display="block";
+  document.getElementById("quickResult").innerHTML=
+   "⚠️ Не смог понять ситуацию.<br>Напиши, например: <b>у меня 16, дилер 10</b>";
+  return;
+ }
+
+ let r=strategy(s.player,s.dealer,false);
+
+ document.getElementById("quickResult").style.display="block";
+
+ document.getElementById("quickResult").innerHTML=`
+  <div class="decision">${r.action}</div>
+  <div style="margin-top:5px">
+   👤 У тебя: ${s.player}<br>
+   🎩 Дилер: ${s.dealer}
+  </div>
+  <div class="reason">${r.reason}</div>
+ `;
+}
+
+/* -------------------------
+   Чат
+------------------------- */
+
+function sendChat(){
+
+ let input=document.getElementById("chatInput");
+ let text=input.value.trim();
+
+ if(!text)return;
+
+ addUser(text);
+
+ let s=parseSituation(text);
+
+ if(s.player && s.dealer){
+
+  let r=strategy(s.player,s.dealer,false);
+
+  setTimeout(()=>{
+   addAI(`
+    👤 У тебя: <strong>${s.player}</strong><br>
+    🎩 Дилер: <strong>${s.dealer}</strong><br>
+    💡 Рекомендация: <strong>${r.action}</strong><br>
+    ${r.reason}
+   `);
+  },180);
+
+ }else{
+
+  setTimeout(()=>{
+   addAI(`
+    Я могу проанализировать ситуацию.
+    Напиши, например:<br>
+    <strong>«У меня 16, у дилера 10»</strong>
+   `);
+  },180);
+
+ }
+
+ input.value="";
+}
+
+function addUser(text){
+
+ let box=document.getElementById("chat");
+
+ box.innerHTML+=`
+  <div class="msg user">
+   <strong>Ты:</strong><br>${escapeHTML(text)}
+  </div>
+ `;
+
+ box.scrollTop=box.scrollHeight;
+}
+
+function addAI(text){
+
+ let box=document.getElementById("chat");
+
+ box.innerHTML+=`
+  <div class="msg ai">
+   <strong>ИИ:</strong><br>${text}
+  </div>
+ `;
+
+ box.scrollTop=box.scrollHeight;
+}
+
+function escapeHTML(text){
+ return text
+  .replaceAll("&","&amp;")
+  .replaceAll("<","&lt;")
+  .replaceAll(">","&gt;");
+}
+
+/* -------------------------
+   Ставка
+------------------------- */
+
+function setBet(n){
+
+ if(state.inRound){
+  alert("Нельзя менять ставку во время раздачи.");
+  return;
+ }
+
+ if(n>state.balance){
+  alert("Недостаточно фишек.");
+  return;
+ }
+
+ state.bet=n;
+
+ document.querySelectorAll(".bet-option")
+  .forEach(x=>x.classList.remove("selected"));
+
+ event.target.classList.add("selected");
+
+ render();
+}
+
+function customBet(){
+
+ if(state.inRound){
+  alert("Нельзя менять ставку во время раздачи.");
+  return;
+ }
+
+ let n=parseInt(prompt("Введи размер ставки:",state.bet));
+
+ if(!n || n<5){
+  alert("Минимальная ставка — 5.");
+  return;
+ }
+
+ if(n>state.balance){
+  alert("Ставка больше текущего банка.");
+  return;
+ }
+
+ state.bet=n;
+
+ document.querySelectorAll(".bet-option")
+  .forEach(x=>x.classList.remove("selected"));
+
+ render();
+}
+
+/* -------------------------
+   Цель
+------------------------- */
+
+function setTarget(){
+
+ let n=parseInt(document.getElementById("targetInput").value);
+
+ if(!n || n<1)n=1000000;
+
+ state.target=n;
+
+ render();
+}
+
+/* -------------------------
+   Сброс
+------------------------- */
+
+function resetBank(){
+
+ if(!confirm("Сбросить банк и статистику?"))return;
+
+ state={
+  balance:START_BANK,
+  bet:500,
+  target:1000000,
+  deck:[],
+  player:[],
+  dealer:[],
+  dealerHidden:true,
+  inRound:false,
+  doubled:false,
+  wins:0,
+  losses:0,
+  pushes:0,
+  rounds:0,
+  totalBet:0,
+  profit:0,
+  bestBank:START_BANK,
+  history:[]
+ };
+
+ render();
+
+ addAI("Банк сброшен до <strong>17 220</strong>.");
+}
+
+/* -------------------------
+   Навигация
+------------------------- */
+
+function showSection(id,button){
+
+ document.querySelectorAll(".section")
+  .forEach(x=>x.classList.remove("active"));
+
+ document.getElementById(id)
+  .classList.add("active");
+
+ document.querySelectorAll(".nav button")
+  .forEach(x=>x.classList.remove("active"));
+
+ button.classList.add("active");
+}
+
+/* -------------------------
+   Enter в чат
+------------------------- */
+
+document.getElementById("chatInput")
+ .addEventListener("keydown",e=>{
+  if(e.key==="Enter")sendChat();
+ });
+
+document.getElementById("quickInput")
+ .addEventListener("keydown",e=>{
+  if(e.key==="Enter")quickAdvice();
+ });
+
+/* -------------------------
+   Начальная инициализация
+------------------------- */
+
+state.deck=shuffle(createDeck());
+render();
+
+/* Автоматически показываем стартовую подсказку */
+if(!state.inRound){
+ setTimeout(()=>{
+  addAI(`
+   💰 Банк: <strong>${money(state.balance)}</strong><br>
+   🎯 Цель: <strong>${money(state.target)}</strong><br>
+   💵 Текущая ставка: <strong>${money(state.bet)}</strong><br><br>
+   Можешь нажать «Новая раздача» или использовать меня только как советчик для другой игры.
+  `);
+ },300);
+}
+</script>
+
+</body>
+</html>
